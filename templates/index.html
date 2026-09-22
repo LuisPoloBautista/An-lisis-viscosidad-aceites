@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Banco de Pruebas de Viscosidad</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container mt-4">
+
+        <div class="container mt-4">
+            <!-- Encabezado con imágenes y texto centrado -->
+            <div class="row align-items-center text-center header-container">
+                <div class="col-3">
+                    <img src="{{ url_for('static', filename='img/logo1.png') }}" alt="Logo Izquierdo" class="img-fluid logo">
+                </div>
+                <div class="col-6">
+                    <h4 class="header-text"><b>INSTITUTO POLITÉCNICO NACIONAL</b></h4>
+                    <h5 class="header-text"><b>ESCUELA SUPERIOR DE INGENIERÍA MECÁNICA Y ELÉCTRICA</b></h5>
+                    <h5 class="header-text"><b>UNIDAD PROFESIONAL "ADOLFO LÓPEZ MATEOS"</b></h5>
+                    <h6 class="header-text"><b>INGENIERÍA EN SISTEMAS AUTOMOTRICES</b></h6>
+                </div>
+                <div class="col-3">
+                    <img src="{{ url_for('static', filename='img/logo2.png') }}" alt="Logo Derecho" class="img-fluid logo">
+                </div>
+            </div>
+            
+        <br> <br>
+
+        <h4 class="text-center"><B>BANCO DE PRUEBAS PARA EL ANÁLISIS DEL ÍNDICE DE VISCOSIDAD EN
+            ACEITES LUBRICANTES</B></h4><br>
+            <h5><B>Llene los recuadros de acuerdo con los datos de la ficha técnica:</B></h5><br>
+
+            <!-- Formulario para ingresar los datos de la ficha técnica -->
+        
+            <form id="viscosityForm">
+            <div class="row">
+                <div class="col-md-6">
+                    <label>Marca de Aceite:</label>
+                    <input type="text" class="form-control" name="marca" required>
+                </div>
+                <div class="col-md-6">
+                    <label>Índice de Viscosidad:</label>
+                    <input type="number" class="form-control" name="indice_viscosidad" step="any" required>
+                </div>
+            </div>
+            <div class="row mt-3">
+                <div class="col-md-6">
+                    <label>Viscosidad Cinemática @40 °C:</label>
+                    <input type="number" class="form-control" name="visco_40" id="visco_40" step="any" required>
+                </div>
+                <div class="col-md-6">
+                    <label>Viscosidad Cinemática @100 °C:</label>
+                    <input type="number" class="form-control" name="visco_100" id="visco_100" step="any" required>
+                </div>
+            </div>
+            <div class="row mt-3">
+                <div class="col-md-3">
+                    <label>Suma 10% @40°C:</label>
+                    <input type="text" class="form-control" id="plus_10_40" readonly>
+                </div>
+                <div class="col-md-3">
+                    <label>Resta 10% @40°C:</label>
+                    <input type="text" class="form-control" id="minus_10_40" readonly>
+                </div>
+                <div class="col-md-3">
+                    <label>Suma 20% @100°C:</label>
+                    <input type="text" class="form-control" id="plus_10_100" readonly>
+                </div>
+                <div class="col-md-3">
+                    <label>Resta 20% @100°C:</label>
+                    <input type="text" class="form-control" id="minus_10_100" readonly>
+                </div>
+            </div>
+            <button type="submit" class="btn btn-primary mt-3" id="calculateButton">Calcular</button>
+        </form>
+    
+    <!-- Tabla de interpolación y gráfica -->
+
+    <div class="mt-4">
+        <h5>Tabla de Interpolación</h5>
+        <div class="table-responsive">
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>Temperatura (°C)</th>
+                    <th>Viscosidad (cSt)</th>
+                </tr>
+            </thead>
+            <tbody id="tabla_datos">
+            </tbody>
+        </table>
+        </div>
+    </div>
+
+    <div class="mt-4">
+        <h5>Gráfica</h5>
+        <img id="graph" src="" alt="Gráfica de Viscosidad" class="img-fluid">
+    </div> <br><br>
+
+    <!-- Formulario para ingresar los datos de las pruebas a 40 -->
+
+
+<h4 class="mb-3">PRUEBA A 40°C</h4>
+
+<h5><B>Llene los recuadros de acuerdo con los datos del banco de prueba:</B></h5><br>
+
+<form id="prueba-form-40">
+    <div class="row mb-3">
+        <div class="col-md-6">
+            <label for="fecha" class="form-label">Día/Mes/Año:</label>
+            <input type="date" id="fecha-40" name="fecha" class="form-control" required>
+        </div>
+        <div class="col-md-6">
+            <label for="hora" class="form-label">Hora:</label>
+            <input type="time" id="hora-40" name="hora" class="form-control" required>
+        </div>
+    </div>
+
+    <div class="row mb-3">
+        <div class="col-md-6">
+            <label for="temp_ambiente" class="form-label">Temperatura Ambiente (°C):</label>
+            <input type="number" step="0.01" id="temp_ambiente-40" name="temp_ambiente" class="form-control" required>
+        </div>
+        <div class="col-md-6">
+            <label for="num_copa" class="form-label">Número de Copa para la Prueba:</label>
+            <select id="num_copa-40" name="num_copa" class="form-control" required>
+                <option value="1">Copa 1</option>
+                <option value="2">Copa 2</option>
+                <option value="3">Copa 3</option>
+                <option value="4">Copa 4</option>
+                <option value="5">Copa 5</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="row mb-3">
+        <div class="col-md-6">
+            <label for="tiempo" class="form-label">Tiempo (s):</label>
+            <select id="tiempo-40" name="tiempo" class="form-control" required>
+                <!-- Generar opciones del 1 al 180 -->
+                {% for i in range(1, 181) %}
+                    <option value="{{ i }}">{{ i }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-6">
+            <label for="viscosidad" class="form-label">Viscosidad Cinemática (cSt):</label>
+            <input type="text" id="viscosidad-40" name="viscosidad-40" class="form-control" readonly>
+        </div>
+    </div>
+    <button class="btn btn-primary" type="button" onclick="calcularViscosidad()">Calcular</button>
+</form><br><br>
+
+<!-- Formulario para ingresar los datos de las pruebas a 100 -->
+ 
+<h4 class="mb-3">PRUEBA A 100°C</h4>
+
+<h5><b>Llene los recuadros de acuerdo con los datos del banco de prueba:</b></h5><br>
+
+<form id="prueba-form-100">
+    <div class="row mb-3">
+        <div class="col-md-6">
+            <label for="fecha" class="form-label">Día/Mes/Año:</label>
+            <input type="date" id="fecha-100" name="fecha" class="form-control" required>
+        </div>
+        <div class="col-md-6">
+            <label for="hora" class="form-label">Hora:</label>
+            <input type="time" id="hora-100" name="hora" class="form-control" required>
+        </div>
+    </div>
+
+    <div class="row mb-3">
+        <div class="col-md-6">
+            <label for="temp_ambiente" class="form-label">Temperatura Ambiente (°C):</label>
+            <input type="number" step="0.01" id="temp_ambiente-100" name="temp_ambiente" class="form-control" required>
+        </div>
+        <div class="col-md-6">
+            <label for="num_copa" class="form-label">Número de Copa para la Prueba:</label>
+            <select id="num_copa-100" name="num_copa" class="form-control" required>
+                <option value="1">Copa 1</option>
+                <option value="2">Copa 2</option>
+                <option value="3">Copa 3</option>
+                <option value="4">Copa 4</option>
+                <option value="5">Copa 5</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="row mb-3">
+        <div class="col-md-6">
+            <label for="tiempo" class="form-label">Tiempo (s):</label>
+            <select id="tiempo-100" name="tiempo" class="form-control" required>
+                <!-- Generar opciones del 1 al 180 -->
+                {% for i in range(1, 181) %}
+                    <option value="{{ i }}">{{ i }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-6">
+            <label for="viscosidad" class="form-label">Viscosidad Cinemática (cSt):</label>
+            <input type="text" id="viscosidad-100" name="viscosidad-100" class="form-control" readonly>
+        </div>
+    </div>
+    <button class="btn btn-primary" type="button" onclick="calcularViscosidad2()">Calcular</button>
+</form>
+
+<!-- Tabla de Datos de Pruebas -->
+<div class="mt-4">
+    <h5>Datos de Pruebas</h5>
+    <div class="table-responsive">
+        <table class="table table-bordered table-striped">
+            <thead class="table-success">
+                <tr>
+                    <th>No.</th>
+                    <th class="text-truncate">Temp. Amb °C</th>
+                    <th class="text-truncate">Marca</th>
+                    <th class="text-truncate">Fecha</th>
+                    <th class="text-truncate">Hora</th>
+                    <th class="text-truncate">Ind. Viscosidad</th>
+                    <th class="text-truncate">Copa Ford</th>
+                    <th class="text-truncate">Temp. Aceite</th>
+                    <th class="text-truncate">Tiempo</th>
+                    <th class="text-truncate">Vis. Cinemática</th>
+                </tr>
+            </thead>
+            <tbody id="tabla_pruebas">
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<br><br>
+
+<!--Nueva tabla interpolación y gráfica-->
+
+<div class="mt-4">
+    <h5>Nueva Tabla de Interpolación</h5>
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>Temperatura (°C)</th>
+                <th>Viscosidad (cSt)</th>
+            </tr>
+        </thead>
+        <tbody id="tabla_datos_new">
+        </tbody>
+    </table>
+</div>
+
+<div class="mt-4">
+    <h5>Nueva Gráfica</h5>
+    <img id="graph_new" src="" alt="Nueva Gráfica de Viscosidad" class="img-fluid">
+</div>
+
+<!-- Nueva sección para ajuste a copa Ford -->
+<div class="mt-4">
+    <h5>Ajuste a copa Ford</h5>
+    <div class="row">
+        <div class="col-md-6">
+            <label for="temp_40_ajuste">Temperatura a 40°C:</label>
+            <input type="number" id="temp_40_ajuste" class="form-control" placeholder="Ingresar" step="any" required>
+        </div>
+        <div class="col-md-6">
+            <label for="temp_100_ajuste">Temperatura a 100°C:</label>
+            <input type="number" id="temp_100_ajuste" class="form-control" placeholder="Ingresar" step="any" required>
+        </div>
+    </div>
+    <button class="btn btn-primary mt-3" type="button" onclick="ajustarCopaFord()">Ajustar</button>
+</div>
+
+<!-- Nueva tabla de datos por ajuste -->
+<div class="mt-4">
+    <h5>Datos por Ajuste</h5>
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>Temperatura (°C)</th>
+                <th>Viscosidad Cinemática (cSt)</th>
+            </tr>
+        </thead>
+        <tbody id="tabla_datos_ajuste">
+        </tbody>
+    </table>
+</div>
+
+<!-- Nueva gráfica de ajuste -->
+<div class="mt-4">
+    <h5>Gráfica de Ajuste</h5>
+    <img id="graph_ajuste" src="" alt="Gráfica de Ajuste" class="img-fluid">
+</div>
+
+<!-- Nueva sección de validación de temperaturas -->
+<div class="mt-4">
+    <h5>Validación de Temperaturas</h5>
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <h6 class="card-title">Temperatura de 40 grados:</h6>
+                    <p class="card-text" id="validacion40">Pendiente de validación</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <h6 class="card-title">Temperatura de 100 grados:</h6>
+                    <p class="card-text" id="validacion100">Pendiente de validación</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<br><br><br>
+<footer class="bg-light text-center py-3 border-top">
+    <p class="mb-0 text-muted">© 2025 CONTROL DE SISTEMAS AUTOMORICES <br><br>Edwin Vladimir Figueroa Camacho <br>Héctor Hernández Villafuerte <br> Jesus Alberto Angeles Bautista</p>
+</footer>
+
+
+
+</div>
+
+
+
+<!--Tabla interpolación y gráfica-->
+<script>
+    document.getElementById("viscosityForm").addEventListener("submit", function(event) {
+        event.preventDefault();
+        let formData = new FormData(this);
+
+        const button = document.getElementById("calculateButton");
+        button.disabled = true;
+        button.textContent = "Calculando...";
+
+        fetch("/calculate", {
+            method: "POST",
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.error) throw new Error(data.error);
+            document.getElementById("plus_10_40").value = data.plus_10_40;
+            document.getElementById("minus_10_40").value = data.minus_10_40;
+            document.getElementById("plus_10_100").value = data.plus_10_100;
+            document.getElementById("minus_10_100").value = data.minus_10_100;
+
+            
+            let tablaHTML = "";
+            data.tabla_datos.forEach(row => {
+                tablaHTML += `<tr><td>${row.temperatura}</td><td>${row.viscosidad}</td></tr>`;
+            });
+            document.getElementById("tabla_datos").innerHTML = tablaHTML;
+
+            document.getElementById("graph").src = data.graph_url;
+        })
+        .catch(error => alert("No se pudo calcular: " + error.message))
+        .finally(() => {
+            button.disabled = false;
+            button.textContent = "Calcular";
+        });
+    });
+</script>
+
+
+
+<!--Datos de Prueba-->
+<script>
+    let pruebaCount = 0;
+
+    function agregarFilaPrueba(formId, viscosidadId) {
+        pruebaCount++;
+        const form = document.getElementById(formId);
+        const marca = document.querySelector('input[name="marca"]').value;
+        const indiceViscosidad = document.querySelector('input[name="indice_viscosidad"]').value;
+        const tempAmbiente = form.querySelector('input[name="temp_ambiente"]').value;
+        const fecha = form.querySelector('input[name="fecha"]').value;
+        const hora = form.querySelector('input[name="hora"]').value;
+        const numCopa = form.querySelector('select[name="num_copa"]').value;
+        const tiempo = form.querySelector('select[name="tiempo"]').value;
+        const viscosidad = document.getElementById(viscosidadId).value;
+        const tempAceite = formId === 'prueba-form-40' ? '40' : '100';
+
+        console.log(`Agregando fila: ${pruebaCount}, ${tempAmbiente}, ${marca}, ${fecha}, ${indiceViscosidad}, ${numCopa}, ${tempAceite}, ${tiempo}, ${viscosidad}`);
+
+        const tablaPruebas = document.getElementById('tabla_pruebas');
+        const nuevaFila = document.createElement('tr');
+        nuevaFila.innerHTML = `
+            <td>${pruebaCount}</td>
+            <td>${tempAmbiente}</td>
+            <td>${marca}</td>
+            <td>${fecha}</td>
+            <td>${hora}</td>
+            <td>${indiceViscosidad}</td>
+            <td>${numCopa}</td>
+            <td>${tempAceite}</td>
+            <td>${tiempo}</td>
+            <td>${viscosidad}</td>
+        `;
+        tablaPruebas.appendChild(nuevaFila);
+    }
+
+    function calcularViscosidad() {
+        const numCopa = document.getElementById('num_copa-40').value;
+        const tiempo = document.getElementById('tiempo-40').value;
+
+        const formData = new FormData();
+        formData.append('num_copa', numCopa);
+        formData.append('tiempo', tiempo);
+        formData.append('temperatura', 40);  // Agregar temperatura de prueba
+
+        fetch('/get_viscosity', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.error) {
+                console.error('Error:', data.error);
+                alert('Error al obtener la viscosidad: ' + data.error);
+            } else {
+                document.getElementById('viscosidad-40').value = data.viscosidad;
+                // Agregar esta línea para añadir la fila a la tabla
+                agregarFilaPrueba('prueba-form-40', 'viscosidad-40');
+                
+                if (data.interpolacion_completa) {
+                    let tablaHTML = "";
+                    data.tabla_datos_new.forEach(row => {
+                        tablaHTML += `<tr><td>${row.temperatura}</td><td>${row.viscosidad}</td></tr>`;
+                    });
+                    document.getElementById("tabla_datos_new").innerHTML = tablaHTML;
+                    document.getElementById("graph_new").src = data.graph_url_new + "?t=" + new Date().getTime();
+                }
+            }
+        })
+        .catch(error => console.error('Error:', error));
+    }
+
+    function calcularViscosidad2() {
+        const numCopa = document.getElementById('num_copa-100').value;
+        const tiempo = document.getElementById('tiempo-100').value;
+
+        const formData = new FormData();
+        formData.append('num_copa', numCopa);
+        formData.append('tiempo', tiempo);
+        formData.append('temperatura', 100);  // Agregar temperatura de prueba
+
+        fetch('/get_viscosity', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.error) {
+                console.error('Error:', data.error);
+                alert('Error al obtener la viscosidad: ' + data.error);
+            } else {
+                document.getElementById('viscosidad-100').value = data.viscosidad;
+                // Agregar esta línea para añadir la fila a la tabla
+                agregarFilaPrueba('prueba-form-100', 'viscosidad-100');
+                
+                if (data.interpolacion_completa) {
+                    let tablaHTML = "";
+                    data.tabla_datos_new.forEach(row => {
+                        tablaHTML += `<tr><td>${row.temperatura}</td><td>${row.viscosidad}</td></tr>`;
+                    });
+                    document.getElementById("tabla_datos_new").innerHTML = tablaHTML;
+                    document.getElementById("graph_new").src = data.graph_url_new + "?t=" + new Date().getTime();
+                }
+            }
+        })
+        .catch(error => console.error('Error:', error));
+    }
+</script>
+
+<script>
+function actualizarTablaYGrafica(data) {
+    // Verificar si hay datos para la nueva tabla
+    if (data.tabla_datos_new && Array.isArray(data.tabla_datos_new)) {
+        let tablaHTML = "";
+        data.tabla_datos_new.forEach(row => {
+            tablaHTML += `<tr><td>${row.temperatura}</td><td>${row.viscosidad}</td></tr>`;
+        });
+        document.getElementById("tabla_datos_new").innerHTML = tablaHTML;
+    }
+
+    // Actualizar la nueva gráfica si hay una URL
+    if (data.graph_url_new) {
+        document.getElementById("graph_new").src = data.graph_url_new;
+    }
+}
+
+// Agregar console.log para debugging
+document.addEventListener('DOMContentLoaded', function() {
+    console.log("Tabla nueva elemento:", document.getElementById("tabla_datos_new"));
+    console.log("Gráfica nueva elemento:", document.getElementById("graph_new"));
+});
+</script>
+
+<script>
+function ajustarCopaFord() {
+    const temp40 = parseFloat(document.getElementById('temp_40_ajuste').value) - 28.56;
+    const temp100 = parseFloat(document.getElementById('temp_100_ajuste').value) - 43.47;
+
+    const formData = new FormData();
+    formData.append('temp_40_ajuste', temp40);
+    formData.append('temp_100_ajuste', temp100);
+
+    fetch('/ajustar_copa_ford', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        let tablaHTML = "";
+        data.tabla_datos_ajuste.forEach(row => {
+            tablaHTML += `<tr><td>${row.temperatura}</td><td>${row.viscosidad}</td></tr>`;
+        });
+        document.getElementById("tabla_datos_ajuste").innerHTML = tablaHTML;
+        document.getElementById("graph_ajuste").src = data.graph_url_ajuste + "?t=" + new Date().getTime();
+        
+        // Agregar la validación de temperaturas
+        validarTemperaturas(data.tabla_datos_ajuste);
+    })
+    .catch(error => console.error('Error:', error));
+}
+
+function validarTemperaturas(datos) {
+    const valor40 = datos.find(row => row.temperatura === 40)?.viscosidad;
+    const valor100 = datos.find(row => row.temperatura === 100)?.viscosidad;
+
+    if (valor40) {
+        const esOptimo40 = valor40 >= 115.83 && valor40 <= 141.57;
+        document.getElementById('validacion40').textContent = esOptimo40 ? 'Óptimo' : 'No óptimo';
+        document.getElementById('validacion40').className = `card-text text-${esOptimo40 ? 'success' : 'danger'}`;
+    }
+
+    if (valor100) {
+        const esOptimo100 = valor100 >= 12.8 && valor100 <= 19.2;
+        document.getElementById('validacion100').textContent = esOptimo100 ? 'Óptimo' : 'No óptimo';
+        document.getElementById('validacion100').className = `card-text text-${esOptimo100 ? 'success' : 'danger'}`;
+    }
+}
+</script>
+
+</body>
+</html>
